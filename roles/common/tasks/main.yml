@@ -1,0 +1,47 @@
+---
+- name: Ensure ~/.local/bin exists
+  ansible.builtin.file:
+    path: "{{ local_bin }}"
+    state: directory
+    mode: '0755'
+
+- name: Install common packages (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name:
+      - git
+      - curl
+      - wget
+      - unzip
+      - tar
+      - build-essential
+      - libssl-dev
+      - pkg-config
+      - ca-certificates
+      - gnupg
+      - ripgrep
+      - xclip
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Install common packages (RedHat/Fedora)
+  ansible.builtin.dnf:
+    name:
+      - git
+      - curl
+      - wget
+      - unzip
+      - tar
+      - gcc
+      - gcc-c++
+      - make
+      - openssl-devel
+      - pkg-config
+      - ca-certificates
+      - gnupg2
+      - ripgrep
+      - xclip
+    state: present
+  become: true
+  when: ansible_os_family == "RedHat"

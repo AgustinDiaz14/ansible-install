@@ -1,0 +1,30 @@
+---
+- name: Fail if dotfiles_repo is not set
+  ansible.builtin.fail:
+    msg: "dotfiles_repo is required. Set it in group_vars/all.yml or pass -e dotfiles_repo=<url>"
+  when: dotfiles_repo == ""
+
+- name: Install stow (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: stow
+    state: present
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Install stow (RedHat/Fedora)
+  ansible.builtin.dnf:
+    name: stow
+    state: present
+  become: true
+  when: ansible_os_family == "RedHat"
+
+- name: Clone dotfiles repo to ~/dotfiles
+  ansible.builtin.git:
+    repo: "{{ dotfiles_repo }}"
+    dest: "{{ user_home }}/dotfiles"
+    update: true
+
+- name: Stow dotfiles to home
+  ansible.builtin.command:
+    cmd: stow --target={{ user_home }} --restow .
+    chdir: "{{ user_home }}/dotfiles"

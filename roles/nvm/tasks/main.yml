@@ -1,0 +1,27 @@
+---
+- name: Check if nvm is installed
+  ansible.builtin.stat:
+    path: "{{ nvm_dir }}/nvm.sh"
+  register: nvm_sh
+
+- name: Download nvm install script
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/nvm-sh/nvm/{{ nvm_version }}/install.sh"
+    dest: /tmp/nvm-install.sh
+    mode: '0755'
+  when: not nvm_sh.stat.exists
+
+- name: Install nvm
+  ansible.builtin.shell:
+    cmd: PROFILE=/dev/null NVM_DIR="{{ nvm_dir }}" bash /tmp/nvm-install.sh
+    executable: /bin/bash
+  when: not nvm_sh.stat.exists
+
+- name: Install Node.js LTS
+  ansible.builtin.shell: |
+    source "{{ nvm_dir }}/nvm.sh"
+    nvm install {{ node_version }}
+    nvm alias default {{ node_version }}
+  args:
+    executable: /bin/bash
+  changed_when: false

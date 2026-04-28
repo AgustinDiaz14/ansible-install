@@ -1,0 +1,38 @@
+---
+- name: Setup local machine
+  hosts: localhost
+  become: false
+
+  roles:
+    - role: common
+      tags: common
+
+    - role: nvm
+      tags: nvm
+
+    - role: starship
+      tags: starship
+
+    - role: fzf
+      tags: fzf
+
+    - role: neovim
+      tags: neovim
+
+    - role: docker
+      tags: docker
+
+    - role: jetbrains_toolbox
+      tags: jetbrains_toolbox
+
+    - role: cursor
+      tags: cursor
+
+    - role: claude_code
+      tags: claude_code
+
+    - role: dotfiles
+      tags: dotfiles
+
+    - role: shell_config
+      tags: shell_config

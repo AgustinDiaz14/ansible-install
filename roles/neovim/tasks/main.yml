@@ -1,0 +1,45 @@
+---
+- name: Set architecture-specific vars
+  ansible.builtin.set_fact:
+    nvim_arch: "{{ ansible_architecture }}"
+
+- name: Check if neovim is installed
+  ansible.builtin.stat:
+    path: "{{ neovim_install_dir }}/bin/nvim"
+  register: nvim_bin
+
+- name: Download neovim tarball
+  ansible.builtin.get_url:
+    url: "https://github.com/neovim/neovim/releases/download/{{ neovim_version }}/nvim-linux-{{ nvim_arch }}.tar.gz"
+    dest: /tmp/nvim.tar.gz
+  when: not nvim_bin.stat.exists
+
+- name: Extract neovim
+  ansible.builtin.unarchive:
+    src: /tmp/nvim.tar.gz
+    dest: /tmp/
+    remote_src: true
+  when: not nvim_bin.stat.exists
+
+- name: Install neovim to ~/.local
+  ansible.builtin.shell:
+    cmd: cp -r /tmp/nvim-linux-{{ nvim_arch }}/* {{ neovim_install_dir }}/
+  when: not nvim_bin.stat.exists
+
+- name: Check for local neovim config
+  ansible.builtin.stat:
+    path: "{{ neovim_config_local_path }}"
+  register: nvim_config_dir
+
+- name: Ensure ~/.config/nvim exists
+  ansible.builtin.file:
+    path: "{{ user_home }}/.config/nvim"
+    state: directory
+    mode: '0755'
+
+- name: Sync neovim config
+  ansible.builtin.copy:
+    src: "{{ neovim_config_local_path }}/"
+    dest: "{{ user_home }}/.config/nvim/"
+    mode: preserve
+  when: nvim_config_dir.stat.exists and nvim_config_dir.stat.isdir

@@ -1,0 +1,2 @@
+---
+toolbox_install_dir: "{{ user_home }}/.local/share/JetBrains/Toolbox/bin"

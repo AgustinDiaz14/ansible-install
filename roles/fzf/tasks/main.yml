@@ -1,0 +1,17 @@
+---
+- name: Check if fzf is installed
+  ansible.builtin.stat:
+    path: "{{ fzf_dir }}/bin/fzf"
+  register: fzf_bin
+
+- name: Clone fzf repository
+  ansible.builtin.git:
+    repo: "{{ fzf_repo }}"
+    dest: "{{ fzf_dir }}"
+    depth: 1
+  when: not fzf_bin.stat.exists
+
+- name: Install fzf (key bindings + shell integration)
+  ansible.builtin.command:
+    cmd: "{{ fzf_dir }}/install --all"
+  when: not fzf_bin.stat.exists

@@ -1,0 +1,17 @@
+---
+- name: Check if starship is installed
+  ansible.builtin.stat:
+    path: "{{ starship_install_dir }}/starship"
+  register: starship_bin
+
+- name: Download starship install script
+  ansible.builtin.get_url:
+    url: "https://starship.rs/install.sh"
+    dest: /tmp/starship-install.sh
+    mode: '0755'
+  when: not starship_bin.stat.exists
+
+- name: Install starship
+  ansible.builtin.command:
+    cmd: /tmp/starship-install.sh --yes --bin-dir {{ starship_install_dir }}
+  when: not starship_bin.stat.exists

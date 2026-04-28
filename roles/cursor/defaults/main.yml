@@ -1,0 +1,5 @@
+---
+cursor_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'x64' }}"
+cursor_appimage_url: "https://downloader.cursor.sh/linux/appImage/{{ cursor_arch }}"
+cursor_install_path: "{{ local_bin }}/cursor"
+cursor_desktop_path: "{{ user_home }}/.local/share/applications/cursor.desktop"

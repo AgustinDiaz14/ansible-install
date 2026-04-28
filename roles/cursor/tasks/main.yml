@@ -1,0 +1,32 @@
+---
+- name: Check if Cursor is installed
+  ansible.builtin.stat:
+    path: "{{ cursor_install_path }}"
+  register: cursor_bin
+
+- name: Download Cursor AppImage
+  ansible.builtin.get_url:
+    url: "{{ cursor_appimage_url }}"
+    dest: "{{ cursor_install_path }}"
+    mode: '0755'
+  when: not cursor_bin.stat.exists
+
+- name: Ensure desktop applications dir exists
+  ansible.builtin.file:
+    path: "{{ user_home }}/.local/share/applications"
+    state: directory
+    mode: '0755'
+
+- name: Create Cursor desktop entry
+  ansible.builtin.copy:
+    dest: "{{ cursor_desktop_path }}"
+    mode: '0644'
+    content: |
+      [Desktop Entry]
+      Name=Cursor
+      Exec={{ cursor_install_path }} --no-sandbox %U
+      Icon=cursor
+      Type=Application
+      Categories=Development;IDE;
+      Comment=AI-powered code editor
+      StartupWMClass=Cursor

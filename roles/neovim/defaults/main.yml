@@ -1,0 +1,4 @@
+---
+neovim_version: "v0.10.4"
+neovim_install_dir: "{{ user_home }}/.local"
+neovim_config_local_path: "{{ playbook_dir }}/nvim-config"

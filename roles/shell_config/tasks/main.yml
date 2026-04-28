@@ -1,0 +1,55 @@
+---
+- name: Check which shell config files exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: shell_config_stats
+  loop:
+    - "{{ user_home }}/.bashrc"
+    - "{{ user_home }}/.zshrc"
+
+- name: Add ~/.local/bin to PATH in .bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ user_home }}/.bashrc"
+    marker: "# {mark} LOCAL_BIN_PATH"
+    block: 'export PATH="{{ local_bin }}:$PATH"'
+  when: shell_config_stats.results[0].stat.exists
+
+- name: Add ~/.local/bin to PATH in .zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ user_home }}/.zshrc"
+    marker: "# {mark} LOCAL_BIN_PATH"
+    block: 'export PATH="{{ local_bin }}:$PATH"'
+  when: shell_config_stats.results[1].stat.exists
+
+- name: Add NVM config to .bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ user_home }}/.bashrc"
+    marker: "# {mark} NVM"
+    block: |
+      export NVM_DIR="{{ nvm_dir }}"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+  when: shell_config_stats.results[0].stat.exists
+
+- name: Add NVM config to .zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ user_home }}/.zshrc"
+    marker: "# {mark} NVM"
+    block: |
+      export NVM_DIR="{{ nvm_dir }}"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  when: shell_config_stats.results[1].stat.exists
+
+- name: Add starship init to .bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ user_home }}/.bashrc"
+    marker: "# {mark} STARSHIP"
+    block: 'eval "$(starship init bash)"'
+  when: shell_config_stats.results[0].stat.exists
+
+- name: Add starship init to .zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ user_home }}/.zshrc"
+    marker: "# {mark} STARSHIP"
+    block: 'eval "$(starship init zsh)"'
+  when: shell_config_stats.results[1].stat.exists

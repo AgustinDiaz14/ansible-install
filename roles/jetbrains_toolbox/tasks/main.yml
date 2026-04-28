@@ -1,0 +1,70 @@
+---
+- name: Check if JetBrains Toolbox is installed
+  ansible.builtin.find:
+    paths: "{{ toolbox_install_dir }}"
+    name: "jetbrains-toolbox"
+  register: toolbox_existing
+  failed_when: false
+
+- name: Fetch latest JetBrains Toolbox release info
+  ansible.builtin.uri:
+    url: "https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release"
+    return_content: true
+  register: toolbox_api
+  when: toolbox_existing.matched | default(0) == 0
+
+- name: Set toolbox download vars
+  ansible.builtin.set_fact:
+    toolbox_url: >-
+      {{ toolbox_api.json.TBA[0].downloads['linux' if ansible_architecture == 'x86_64' else 'linux-arm64'].link }}
+  when: toolbox_existing.matched | default(0) == 0
+
+- name: Download JetBrains Toolbox
+  ansible.builtin.get_url:
+    url: "{{ toolbox_url }}"
+    dest: /tmp/jetbrains-toolbox.tar.gz
+  when: toolbox_existing.matched | default(0) == 0
+
+- name: Create extraction directory
+  ansible.builtin.file:
+    path: /tmp/jb-toolbox-extract
+    state: directory
+    mode: '0755'
+  when: toolbox_existing.matched | default(0) == 0
+
+- name: Extract JetBrains Toolbox
+  ansible.builtin.unarchive:
+    src: /tmp/jetbrains-toolbox.tar.gz
+    dest: /tmp/jb-toolbox-extract/
+    remote_src: true
+  when: toolbox_existing.matched | default(0) == 0
+
+- name: Find toolbox binary in extracted dir
+  ansible.builtin.find:
+    paths: /tmp/jb-toolbox-extract
+    name: "jetbrains-toolbox"
+    recurse: true
+  register: toolbox_extracted_bin
+  when: toolbox_existing.matched | default(0) == 0
+
+- name: Ensure toolbox install dir exists
+  ansible.builtin.file:
+    path: "{{ toolbox_install_dir }}"
+    state: directory
+    mode: '0755'
+  when: toolbox_existing.matched | default(0) == 0
+
+- name: Copy toolbox binary to install dir
+  ansible.builtin.copy:
+    src: "{{ toolbox_extracted_bin.files[0].path }}"
+    dest: "{{ toolbox_install_dir }}/jetbrains-toolbox"
+    mode: '0755'
+    remote_src: true
+  when: toolbox_existing.matched | default(0) == 0 and toolbox_extracted_bin.matched > 0
+
+- name: Create symlink in ~/.local/bin
+  ansible.builtin.file:
+    src: "{{ toolbox_install_dir }}/jetbrains-toolbox"
+    dest: "{{ local_bin }}/jetbrains-toolbox"
+    state: link
+  when: toolbox_existing.matched | default(0) == 0 and toolbox_extracted_bin.matched > 0

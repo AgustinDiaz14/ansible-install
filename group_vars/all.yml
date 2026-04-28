@@ -1,0 +1,7 @@
+---
+user_home: "{{ ansible_env.HOME }}"
+user_name: "{{ ansible_env.USER }}"
+local_bin: "{{ ansible_env.HOME }}/.local/bin"
+nvm_dir: "{{ ansible_env.HOME }}/.nvm"
+
+dotfiles_repo: "https://github.com/AgustinDiaz14/dotfiles.git"
