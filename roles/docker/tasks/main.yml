@@ -41,3 +41,26 @@
     enabled: true
     state: started
   become: true
+
+- name: Enable and start containerd service
+  ansible.builtin.systemd:
+    name: containerd
+    enabled: true
+    state: started
+  become: true
+
+- name: Configure Docker log rotation
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "local",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      }
+    mode: '0644'
+  become: true
+  notify: Restart Docker
+
