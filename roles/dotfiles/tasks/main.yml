@@ -18,6 +18,13 @@
   become: true
   when: ansible_os_family == "RedHat"
 
+- name: Install stow (Arch)
+  community.general.pacman:
+    name: stow
+    state: present
+  become: true
+  when: ansible_os_family == "Archlinux"
+
 - name: Clone dotfiles repo to ~/dotfiles
   ansible.builtin.git:
     repo: "{{ dotfiles_repo }}"
