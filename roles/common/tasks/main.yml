@@ -45,3 +45,23 @@
     state: present
   become: true
   when: ansible_os_family == "RedHat"
+
+- name: Install common packages (Arch)
+  community.general.pacman:
+    name:
+      - git
+      - curl
+      - wget
+      - unzip
+      - tar
+      - base-devel
+      - openssl
+      - pkgconf
+      - ca-certificates
+      - gnupg
+      - ripgrep
+      - xclip
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_os_family == "Archlinux"
